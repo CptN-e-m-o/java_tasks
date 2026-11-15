@@ -31,7 +31,7 @@ public class Main {
 
             logger.info("Приложение запущено");
 
-            UserDao userDao = new UserDaoImpl();
+            UserDao userDao = new UserDaoImpl(sessionFactory);
             UserService userService = new UserService(userDao);
             ConsoleMenu menu = new ConsoleMenu(userService);
 

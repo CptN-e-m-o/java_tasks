@@ -15,15 +15,23 @@ import org.slf4j.LoggerFactory;
 import org.hibernate.exception.ConstraintViolationException;
 import org.example.userservice.exception.DuplicateEmailException;
 
+import org.hibernate.SessionFactory;
+
 public class UserDaoImpl implements UserDao {
 
     private static final Logger logger =
             LoggerFactory.getLogger(UserDaoImpl.class);
 
+    private final SessionFactory sessionFactory;
+
+    public UserDaoImpl(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
+    }
+
 
     @Override
     public void create(User user) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
 
             try {
@@ -60,7 +68,7 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public Optional<User> findById(Long id) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = sessionFactory.openSession()) {
 
             User user = session.find(User.class, id);
 
@@ -70,7 +78,7 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public List<User> findAll() {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = sessionFactory.openSession()) {
 
             return session.createQuery("FROM User", User.class).getResultList();
         }
@@ -78,7 +86,7 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public void update(User user) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
 
             try {
@@ -115,7 +123,7 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public void delete(Long id) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
 
             try {
@@ -141,7 +149,6 @@ public class UserDaoImpl implements UserDao {
 
                 throw e;
             }
-
         }
     }
 
