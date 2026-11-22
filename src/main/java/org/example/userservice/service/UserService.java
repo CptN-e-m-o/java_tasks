@@ -1,48 +1,70 @@
 package org.example.userservice.service;
 
-import org.example.userservice.dao.UserDao;
 import org.example.userservice.entity.User;
+import org.example.userservice.repository.UserRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class UserService {
 
-    private final UserDao userDao;
+    private final UserRepository userRepository;
 
-    public UserService(UserDao userDao) {
-        this.userDao = userDao;
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
-    public void createUser(String name, String email, int age) {
+    public User createUser(String name, String email, int age) {
         validateUserData(name, email, age);
+
         User user = new User(name, email, age);
 
-        userDao.create(user);
+        return userRepository.save(user);
     }
 
     public Optional<User> getUserById(Long id) {
         validateUserId(id);
-        return userDao.findById(id);
+        return userRepository.findById(id);
     }
 
     public List<User> getAllUsers() {
-        return userDao.findAll();
+        return userRepository.findAll();
     }
 
-    public void updateUser(User user) {
-        if (user == null) {
-            throw new IllegalArgumentException("User равен null");
-        }
-        validateUserId(user.getId());
-        validateUserData(user.getName(), user.getEmail(), user.getAge());
-
-        userDao.update(user);
-    }
-
-    public void deleteUser(Long id) {
+    public Optional<User> updateUser(
+            Long id,
+            String name,
+            String email,
+            Integer age
+    ) {
         validateUserId(id);
-        userDao.delete(id);
+        validateUserData(name, email, age);
+        Optional<User> user = userRepository.findById(id);
+
+        if (user.isPresent()) {
+            User existingUser = user.get();
+
+            existingUser.setName(name);
+            existingUser.setEmail(email);
+            existingUser.setAge(age);
+
+            return Optional.of(userRepository.save(existingUser));
+        }
+
+        return Optional.empty();
+    }
+
+    public boolean deleteUser(Long id) {
+        validateUserId(id);
+        Optional<User> user = userRepository.findById(id);
+        if (user.isPresent()) {
+            User existingUser = user.get();
+            userRepository.delete(existingUser);
+            return true;
+        }
+        return false;
     }
 
     private void validateUserData(String name, String email, Integer  age) {

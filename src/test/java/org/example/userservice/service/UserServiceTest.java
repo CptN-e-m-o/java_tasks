@@ -1,84 +1,78 @@
 
 package org.example.userservice.service;
 
-import org.example.userservice.dao.UserDao;
 import org.example.userservice.entity.User;
+import org.example.userservice.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.ArgumentCaptor;
 
-import java.util.*;
-
-import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class UserServiceTest {
+class UserServiceTest {
 
     @Mock
-    private UserDao userDao;
+    private UserRepository userRepository;
 
     @InjectMocks
     private UserService userService;
 
     @Test
     void createUser_withEmptyName_throwsException() {
-        String name = "";
-        String email = "test@example.com";
-        int age = 25;
-
         assertThrows(IllegalArgumentException.class,
-                () -> userService.createUser(name, email, age));
+                () -> userService.createUser("", "test@example.com", 25));
 
-        verifyNoInteractions(userDao);
+        verifyNoInteractions(userRepository);
     }
 
     @Test
     void createUser_withNegativeAge_throwsException() {
-        String name = "User";
-        String email = "test@example.com";
-        int age = -10;
-
         assertThrows(IllegalArgumentException.class,
-                () -> userService.createUser(name, email, age));
+                () -> userService.createUser("User", "test@example.com", -10));
 
-        verifyNoInteractions(userDao);
+        verifyNoInteractions(userRepository);
     }
 
     @Test
-    void createUser_withValidData_callsDao() {
-        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+    void createUser_withValidData_savesUser() {
+        ArgumentCaptor<User> captor =
+                ArgumentCaptor.forClass(User.class);
 
         String name = "User";
         String email = "test@example.com";
         int age = 25;
 
-        userService.createUser(name, email, age);
-        verify(userDao).create(captor.capture());
+        when(userRepository.save(any(User.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        User result = userService.createUser(name, email, age);
+
+        verify(userRepository).save(captor.capture());
 
         User capturedUser = captor.getValue();
 
-        assertEquals("User", capturedUser.getName());
-        assertEquals("test@example.com", capturedUser.getEmail());
-        assertEquals(25, capturedUser.getAge());
+        assertEquals(name, capturedUser.getName());
+        assertEquals(email, capturedUser.getEmail());
+        assertEquals(age, capturedUser.getAge());
+        assertSame(capturedUser, result);
     }
-
 
     @Test
     void getUserById_whenUserExists_returnsUser() {
         Long id = 1L;
-        String name = "User";
-        String email = "test@example.com";
-        int age = 25;
+        User user = new User("User", "test@example.com", 25);
 
-        User user = new User(name, email, age);
-
-        when(userDao.findById(id))
+        when(userRepository.findById(id))
                 .thenReturn(Optional.of(user));
 
         Optional<User> result = userService.getUserById(id);
@@ -86,20 +80,21 @@ public class UserServiceTest {
         assertTrue(result.isPresent());
         assertSame(user, result.get());
 
-        verify(userDao).findById(id);
+        verify(userRepository).findById(id);
     }
 
     @Test
     void getUserById_whenUserNotFound_returnsEmpty() {
         Long id = 999L;
 
-        when(userDao.findById(id))
+        when(userRepository.findById(id))
                 .thenReturn(Optional.empty());
 
         Optional<User> result = userService.getUserById(id);
 
         assertTrue(result.isEmpty());
-        verify(userDao).findById(id);
+
+        verify(userRepository).findById(id);
     }
 
     @Test
@@ -109,69 +104,126 @@ public class UserServiceTest {
         assertThrows(IllegalArgumentException.class,
                 () -> userService.getUserById(id));
 
-        verifyNoInteractions(userDao);
+        verifyNoInteractions(userRepository);
     }
 
     @Test
     void getAllUsers_whenUsersExist_returnsUsers() {
         User user1 = new User("user1", "user1@test.com", 20);
-        User user2 = new User("user2", "user2@test.com", 20);
-        List<User> users = new ArrayList<>(Arrays.asList(user1, user2));
+        User user2 = new User("user2", "user2@test.com", 25);
 
-        when(userDao.findAll())
+        List<User> users = List.of(user1, user2);
+
+        when(userRepository.findAll())
                 .thenReturn(users);
-        assertEquals(users, userService.getAllUsers());
-        verify(userDao).findAll();
+
+        List<User> result = userService.getAllUsers();
+
+        assertEquals(users, result);
+        assertEquals(2, result.size());
+
+        verify(userRepository).findAll();
     }
 
     @Test
     void getAllUsers_whenNoUsers_returnsEmptyList() {
-        when(userDao.findAll()).thenReturn(Collections.emptyList());
+        when(userRepository.findAll())
+                .thenReturn(Collections.emptyList());
 
         List<User> result = userService.getAllUsers();
+
         assertTrue(result.isEmpty());
 
-        verify(userDao).findAll();
+        verify(userRepository).findAll();
     }
 
     @Test
-    void updateUser_withValidData_callsDao() throws Exception {
-        User user = new User("user", "user@test.com", 25);
-
-        Field idField = User.class.getDeclaredField("id");
-        idField.setAccessible(true);
-        idField.set(user, 1L);
-
-        userService.updateUser(user);
-
-        verify(userDao).update(user);
-    }
-
-    @Test
-    void updateUser_withoutId_throwsException() {
-        User user = new User("user", "user@test.com", 25);
-
-        assertThrows(IllegalArgumentException.class,
-                () -> userService.updateUser(user));
-
-        verifyNoInteractions(userDao);
-    }
-
-    @Test
-    void updateUser_withNullUser_throwsException() {
-        assertThrows(IllegalArgumentException.class,
-                () -> userService.updateUser(null));
-
-        verifyNoInteractions(userDao);
-    }
-
-    @Test
-    void deleteUser_withValidId_callsDao() {
+    void updateUser_withValidData_callsRepository() {
         Long id = 1L;
+        User user = new User("Old", "old@test.com", 20);
 
-        userService.deleteUser(id);
+        when(userRepository.findById(id))
+                .thenReturn(Optional.of(user));
 
-        verify(userDao).delete(id);
+        when(userRepository.save(user))
+                .thenReturn(user);
+
+        Optional<User> result = userService.updateUser(
+                id,
+                "New",
+                "new@test.com",
+                30
+        );
+
+        assertTrue(result.isPresent());
+        assertEquals("New", result.get().getName());
+        assertEquals("new@test.com", result.get().getEmail());
+        assertEquals(30, result.get().getAge());
+
+        verify(userRepository).findById(id);
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void updateUser_withInvalidId_throwsException() {
+        assertThrows(IllegalArgumentException.class,
+                () -> userService.updateUser(
+                        null,
+                        "User",
+                        "user@test.com",
+                        25
+                ));
+
+        verifyNoInteractions(userRepository);
+    }
+
+    @Test
+    void updateUser_withNullName_throwsException() {
+        assertThrows(IllegalArgumentException.class,
+                () -> userService.updateUser(
+                        1L,
+                        null,
+                        "user@test.com",
+                        25
+                ));
+
+        verifyNoInteractions(userRepository);
+    }
+
+    @Test
+    void updateUser_whenUserNotFound_returnsEmpty() {
+        Long id = 999L;
+
+        when(userRepository.findById(id))
+                .thenReturn(Optional.empty());
+
+        Optional<User> result = userService.updateUser(
+                id,
+                "User",
+                "user@test.com",
+                25
+        );
+
+        assertTrue(result.isEmpty());
+
+        verify(userRepository).findById(id);
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void deleteUser_withValidId_callsRepository() {
+        Long id = 1L;
+        User user = new User("User", "user@test.com", 25);
+
+        when(userRepository.findById(id))
+                .thenReturn(Optional.of(user));
+
+        boolean result = userService.deleteUser(id);
+
+        assertTrue(result);
+
+        verify(userRepository).findById(id);
+        verify(userRepository).delete(user);
     }
 
     @Test
@@ -181,6 +233,21 @@ public class UserServiceTest {
         assertThrows(IllegalArgumentException.class,
                 () -> userService.deleteUser(id));
 
-        verifyNoInteractions(userDao);
+        verifyNoInteractions(userRepository);
+    }
+
+    @Test
+    void deleteUser_whenUserNotFound_returnsFalse() {
+        Long id = 999L;
+
+        when(userRepository.findById(id))
+                .thenReturn(Optional.empty());
+
+        boolean result = userService.deleteUser(id);
+
+        assertFalse(result);
+
+        verify(userRepository).findById(id);
+        verify(userRepository, never()).delete(any(User.class));
     }
 }
