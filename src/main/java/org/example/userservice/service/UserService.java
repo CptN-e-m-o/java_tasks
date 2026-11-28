@@ -1,6 +1,7 @@
 package org.example.userservice.service;
 
 import org.example.userservice.entity.User;
+import org.example.userservice.kafka.UserEventProducer;
 import org.example.userservice.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -11,17 +12,27 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserEventProducer userEventProducer;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(
+            UserRepository userRepository,
+            UserEventProducer userEventProducer
+    ) {
         this.userRepository = userRepository;
+        this.userEventProducer = userEventProducer;
     }
+
 
     public User createUser(String name, String email, int age) {
         validateUserData(name, email, age);
 
-        User user = new User(name, email, age);
+        User user = userRepository.save(
+                new User(name, email, age)
+        );
 
-        return userRepository.save(user);
+        userEventProducer.userCreated(user.getEmail());
+
+        return user;
     }
 
     public Optional<User> getUserById(Long id) {
@@ -56,15 +67,24 @@ public class UserService {
         return Optional.empty();
     }
 
+
     public boolean deleteUser(Long id) {
         validateUserId(id);
+
         Optional<User> user = userRepository.findById(id);
-        if (user.isPresent()) {
-            User existingUser = user.get();
-            userRepository.delete(existingUser);
-            return true;
+
+        if (user.isEmpty()) {
+            return false;
         }
-        return false;
+
+        User existingUser = user.get();
+        String email = existingUser.getEmail();
+
+        userRepository.delete(existingUser);
+
+        userEventProducer.userDeleted(email);
+
+        return true;
     }
 
     private void validateUserData(String name, String email, Integer  age) {

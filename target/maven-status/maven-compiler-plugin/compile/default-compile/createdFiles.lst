@@ -1,0 +1,4 @@
+org\example\userservice\event\UserOperation.class
+org\example\userservice\config\KafkaTopicConfig.class
+org\example\userservice\kafka\UserEventProducer.class
+org\example\userservice\event\UserEvent.class

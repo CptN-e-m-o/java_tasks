@@ -2,6 +2,7 @@
 package org.example.userservice.service;
 
 import org.example.userservice.entity.User;
+import org.example.userservice.kafka.UserEventProducer;
 import org.example.userservice.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +27,9 @@ class UserServiceTest {
 
     @InjectMocks
     private UserService userService;
+
+    @Mock
+    private UserEventProducer userEventProducer;
 
     @Test
     void createUser_withEmptyName_throwsException() {

@@ -1,4 +1,4 @@
-classpath:C:\KPO_Kurs\Aston_intensiv\target\classes	14:286ee2f826543698c62213db8c78de27bf6007af11ef8aca762116a80d8c82ef
+classpath:C:\KPO_Kurs\Aston_intensiv\target\classes	18:a800ae7e96bedfee0dcaa4979e42cb051fa55b6c5518aaf35dc3067c50db2808
 classpath:C:\Users\vaz21\.m2\repository\org\springframework\boot\spring-boot-starter-webmvc\4.2.0\spring-boot-starter-webmvc-4.2.0.jar	4747:1795110961000
 classpath:C:\Users\vaz21\.m2\repository\org\springframework\boot\spring-boot-starter\4.2.0\spring-boot-starter-4.2.0.jar	4766:1795110961000
 classpath:C:\Users\vaz21\.m2\repository\org\springframework\boot\spring-boot-starter-logging\4.2.0\spring-boot-starter-logging-4.2.0.jar	4741:1795110957000
@@ -128,3 +128,11 @@ classpath:C:\Users\vaz21\.m2\repository\com\fasterxml\jackson\core\jackson-annot
 classpath:C:\Users\vaz21\.m2\repository\com\github\docker-java\docker-java-transport-zerodep\3.7.1\docker-java-transport-zerodep-3.7.1.jar	2304500:1773859705000
 classpath:C:\Users\vaz21\.m2\repository\com\github\docker-java\docker-java-transport\3.7.1\docker-java-transport-3.7.1.jar	38830:1773859705000
 classpath:C:\Users\vaz21\.m2\repository\net\java\dev\jna\jna\5.18.1\jna-5.18.1.jar	2002994:1759257614000
+classpath:C:\Users\vaz21\.m2\repository\org\springframework\boot\spring-boot-starter-kafka\4.2.0\spring-boot-starter-kafka-4.2.0.jar	4742:1795110957000
+classpath:C:\Users\vaz21\.m2\repository\org\springframework\boot\spring-boot-kafka\4.2.0\spring-boot-kafka-4.2.0.jar	102904:1795110948000
+classpath:C:\Users\vaz21\.m2\repository\org\springframework\kafka\spring-kafka\4.2.0\spring-kafka-4.2.0.jar	1023824:1795105250000
+classpath:C:\Users\vaz21\.m2\repository\org\springframework\spring-messaging\7.1.0\spring-messaging-7.1.0.jar	615374:1795096516000
+classpath:C:\Users\vaz21\.m2\repository\org\apache\kafka\kafka-clients\4.4.0\kafka-clients-4.4.0.jar	10925782:1791303703000
+classpath:C:\Users\vaz21\.m2\repository\com\github\luben\zstd-jni\1.5.7-17\zstd-jni-1.5.7-17.jar	6323239:1789589919000
+classpath:C:\Users\vaz21\.m2\repository\at\yawk\lz4\lz4-java\1.11.2\lz4-java-1.11.2.jar	897831:1786003198000
+classpath:C:\Users\vaz21\.m2\repository\org\xerial\snappy\snappy-java\1.1.10.7\snappy-java-1.1.10.7.jar	2338496:1726008442000

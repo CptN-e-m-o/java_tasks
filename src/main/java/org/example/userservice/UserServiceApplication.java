@@ -7,6 +7,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class UserServiceApplication {
 
     public static void main(String[] args) {
+        String password = System.getenv("DB_PASSWORD");
+
+        System.out.println(
+                "DB_PASSWORD доступна: " + (password != null && !password.isBlank())
+        );
+
         SpringApplication.run(UserServiceApplication.class, args);
     }
 }
